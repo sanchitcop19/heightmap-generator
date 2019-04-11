@@ -4,7 +4,7 @@ import sys
 import time
 import numpy as np
 from decimal import Decimal
-
+from config import APIKEY
 offset = 100000
 #offset = 10000
 
@@ -85,7 +85,7 @@ for row, latitude in enumerate(range(4230080, end_lat + 1, -1), start=197):
         while not success:
             try:
                 #r = requests.get('https://nationalmap.gov/epqs/pqs.php?x=' + str(lon) + '&y=' + str(lat) + '&units=Meters&output=json')
-                r = requests.get('https://maps.googleapis.com/maps/api/elevation/json?locations=' + str(lat) + ','+str(lon)+apikey)
+                r = requests.get('https://maps.googleapis.com/maps/api/elevation/json?locations=' + str(lat) + ','+str(lon)+APIKEY)
 
                 elevation = json.loads(r.content)
                 elevation = elevation['results'][0]['elevation']

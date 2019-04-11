@@ -1,0 +1,3 @@
+# Define configuration variables
+
+APIKEY=''
