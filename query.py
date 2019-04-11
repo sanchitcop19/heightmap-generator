@@ -4,111 +4,76 @@ import sys
 import time
 import numpy as np
 from decimal import Decimal
-from config import APIKEY
-offset = 100000
-#offset = 10000
+from math import inf
+from config import *
 
-#bottom_left_lat = 0
-#bottom_left_lon = 0
+"""
+IMPORTANT: The generator works for rectangular heightmaps only.
+"""
 
-bottom_left_lat = 42.29906
-bottom_left_lon = -83.69991
-#--------------------------------
-# temp
-#bottom_left_lat = 43.2990
-#bottom_left_lon = -83.6999
-#--------------------------------
-#bottom_right_lat = bottom_left_lat
-#bottom_right_lon = 8
-bottom_right_lat = bottom_left_lat
-bottom_right_lon = -83.69642
-#--------------------------------
-# temp
-#bottom_right_lat = bottom_left_lat
-#bottom_right_lon = -83.6964
-#--------------------------------
-#top_left_lat = 8
-#top_left_lon = bottom_left_lon
-#--------------------------------
-top_left_lat = 42.30277777
-top_left_lon = bottom_left_lon
-# temp
-#top_left_lat = 42.3027
-#top_left_lon = bottom_left_lon
-#--------------------------------
-top_right_lat = top_left_lat
-top_right_lon = bottom_right_lon
-#--------------------------------
-# temp
-#top_right_lat = top_left_lat
-#top_right_lon = bottom_right_lon
-#--------------------------------
+# Add a check for precision
 
-start_lon = int(top_left_lon*offset)
-end_lon = int(top_right_lon*offset)
+# Converts the decimal degrees to an integer temporarily
+offset = 10 ** len(str(Decimal(str(TOP_LEFT_LAT))).split('.')[1])
 
-start_lat = int(top_left_lat*offset)
-end_lat = int(bottom_left_lat*offset)
+start_lon = int(TOP_LEFT_LON * offset)
+end_lon = int(TOP_RIGHT_LON * offset)
+
+start_lat = int(TOP_LEFT_LAT * offset)
+end_lat = int(BOTTOM_LEFT_LAT * offset)
+
 count = 0
 length = 0
-minimum = 12000
+
+minimum = inf
 maximum = 0
-#matrix = np.loadtxt("test.txt")
+
 success = False
-from random import randint
-side = 8
-#matrix = [[c for c in range(350)]for r in range(370)]
-matrix = np.loadtxt('heightmap_precise_google.txt')
-#print(matrix)
-#print(start_lat, end_lat, start_lon, end_lon)
-'''
-for row, latitude in enumerate(range(start_lat, end_lat, -1)):
-    length += 1
-    for col, longitude in enumerate(range(start_lon, end_lon)):
-        lat = latitude/offset
-        lon = longitude/offset
-        count += 1
-        print(row, col)
-        matrix[row][col] = 266 if col < 4 else 278
-np.savetxt("dummy.txt", np.matrix(matrix))
-'''
+
+matrix = [[c for c in range(350)]for r in range(370)]
+#matrix = np.loadtxt('heightmap.txt')
 
 for row, latitude in enumerate(range(4230080, end_lat + 1, -1), start=197):
     length += 1
-    for col, longitude in enumerate(range(start_lon, end_lon + 1)):
-        lat= latitude/offset
-        lon= longitude/offset
-        print(lat, lon)
 
+    for col, longitude in enumerate(range(start_lon, end_lon + 1)):
+
+        lat = latitude / offset
+        lon = longitude / offset
+        print(lat, lon)
         count += 1
-        #print(count)
+
         while not success:
             try:
-                #r = requests.get('https://nationalmap.gov/epqs/pqs.php?x=' + str(lon) + '&y=' + str(lat) + '&units=Meters&output=json')
-                r = requests.get('https://maps.googleapis.com/maps/api/elevation/json?locations=' + str(lat) + ','+str(lon)+APIKEY)
+                # Uncomment the line below to use the USGS service instead
+                # r = requests.get('https://nationalmap.gov/epqs/pqs.php?x=' \
+                # + str(lon) + '&y=' + str(lat) + '&units=Meters&output=json')
+                r = requests.get('https://maps.googleapis.com/maps/api/elevation/json?locations='
+                                 + str(lat) + ',' + str(lon) + APIKEY)
 
                 elevation = json.loads(r.content)
                 elevation = elevation['results'][0]['elevation']
-                #print(elevation)
-                if elevation < minimum:
-                    minimum = elevation
-                if elevation > maximum:
-                    maximum = elevation
+
+                minimum = elevation if elevation < minimum else minimum
+
+                maximum = elevation if elevation > maximum else maximum
 
                 matrix[row, col] = elevation
-                print(elevation)
+
                 success = True
-                print(60550-count, " to go")
+
             except Exception as e:
+                # Catch every exception and try again, the internet is an unreliable abyss :)
                 print(e)
-                time.sleep(2)
+                time.sleep(1)
                 success = False
         success = False
-    time.sleep(3)
-    np.savetxt("heightmap_precise_google.txt", matrix)
 
-print(count, " queries")
-width = count/length
+    # Saving the data after every row is done, the file is overwritten each time
+    np.savetxt("heightmap.txt", matrix)
+
+print(count, " queries were made.")
+width = count / length
+print("Dimensions of the heightmap:")
 print("Length: ", length, "Width: ", width)
-print("Maximum: ", maximum, "Minimum: ", minimum)
-print(matrix)
+print("Maximum elevation: ", maximum, "Minimum elevation: ", minimum)
