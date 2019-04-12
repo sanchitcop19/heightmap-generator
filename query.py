@@ -10,6 +10,13 @@ from config import *
 """
 IMPORTANT: The generator works for rectangular heightmaps only.
 """
+if len(sys.argv) < 3:
+    print("Usage: python3 query.py <rows> <columns>")
+    sys.exit(1)
+
+# Set the dimensions of the heightmap
+rows  = int(sys.argv[1])
+columns = int(sys.argv[2])
 
 # Add a check for precision
 
@@ -30,7 +37,7 @@ maximum = 0
 
 success = False
 
-matrix = np.array([[c for c in range(350)]for r in range(370)], dtype = 'float64')
+matrix = np.array([[c for c in range(columns)]for r in range(rows)], dtype = 'float64')
 
 # Uncomment below if you want to load a partially saved heightmap
 #matrix = np.loadtxt('heightmap.txt')
