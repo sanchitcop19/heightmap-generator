@@ -30,10 +30,12 @@ maximum = 0
 
 success = False
 
-matrix = [[c for c in range(350)]for r in range(370)]
+matrix = np.array([[c for c in range(350)]for r in range(370)], dtype = 'float64')
+
+# Uncomment below if you want to load a partially saved heightmap
 #matrix = np.loadtxt('heightmap.txt')
 
-for row, latitude in enumerate(range(4230080, end_lat + 1, -1), start=197):
+for row, latitude in enumerate(range(start_lat, end_lat + 1, -1)):
     length += 1
 
     for col, longitude in enumerate(range(start_lon, end_lon + 1)):
@@ -48,8 +50,9 @@ for row, latitude in enumerate(range(4230080, end_lat + 1, -1), start=197):
                 # Uncomment the line below to use the USGS service instead
                 # r = requests.get('https://nationalmap.gov/epqs/pqs.php?x=' \
                 # + str(lon) + '&y=' + str(lat) + '&units=Meters&output=json')
-                r = requests.get('https://maps.googleapis.com/maps/api/elevation/json?locations='
-                                 + str(lat) + ',' + str(lon) + APIKEY)
+                query = 'https://maps.googleapis.com/maps/api/elevation/json?locations=' + str(lat) + ',' + str(lon) + '&key=' + APIKEY
+
+                r = requests.get(query)
 
                 elevation = json.loads(r.content)
                 elevation = elevation['results'][0]['elevation']
