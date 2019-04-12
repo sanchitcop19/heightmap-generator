@@ -37,19 +37,23 @@ maximum = 0
 
 success = False
 
+total_queries = rows*columns
+
 matrix = np.array([[c for c in range(columns)]for r in range(rows)], dtype = 'float64')
 
 # Uncomment below if you want to load a partially saved heightmap
 #matrix = np.loadtxt('heightmap.txt')
 
 for row, latitude in enumerate(range(start_lat, end_lat + 1, -1)):
+
     length += 1
 
     for col, longitude in enumerate(range(start_lon, end_lon + 1)):
 
         lat = latitude / offset
         lon = longitude / offset
-        print(lat, lon)
+        print("-----------------------------------")
+        print("Coordinates: (", lat, ", ", lon, ")")
         count += 1
 
         while not success:
@@ -69,6 +73,9 @@ for row, latitude in enumerate(range(start_lat, end_lat + 1, -1)):
                 maximum = elevation if elevation > maximum else maximum
 
                 matrix[row, col] = elevation
+
+                print(total_queries - count, "queries to go")
+
 
                 success = True
 
