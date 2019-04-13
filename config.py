@@ -1,6 +1,6 @@
 # Define configuration variables
 
-APIKEY = ''
+APIKEY = 'AIzaSyDBzuc038B2tchyQwb5aYbpepE4rp4RiEk'
 
 # Ensure that the following coordinates are in decimal degrees and of the same precision
 

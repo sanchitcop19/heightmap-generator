@@ -20,9 +20,6 @@ def run():
         def __getitem__(self, index):
             return self.key(self.l[index])
 
-    if len(sys.argv) < 4:
-        print("not enough arguments given")
-        sys.exit()
     def find_bounds(matrix):
         return np.amin(matrix), np.amax(matrix)
 
@@ -56,7 +53,7 @@ def run():
 
     bitdepth = 16
 
-    matrix = np.loadtxt(sys.argv[1])
+    matrix = np.loadtxt(sys.argv[2])
 
     possible_colors = create_colors(matrix)
 
@@ -64,8 +61,7 @@ def run():
     #iterate through each
     # find closest mapping in possible_colors
     # assign a new numpy array that coloring
-    rows = 257
-    cols = 257
+    rows = cols = int(sys.argv[1])
     heightmap = np.zeros((rows, cols), dtype=int)
     for row in range(0, rows):
         for col in range(0, cols):
@@ -75,10 +71,10 @@ def run():
             color = left if abs(left-matrix[row, col]) < abs(right-matrix[row, col]) else right
             heightmap[row, col] = bisect_left(KeyList(assignment, key = lambda x : x[1]), color)
 
-    np.savetxt(sys.argv[2], heightmap)
+    np.savetxt(sys.argv[3], heightmap)
     save = heightmap.tolist()
 
-    with open(sys.argv[3], 'wb') as file:
+    with open(sys.argv[4], 'wb') as file:
         w = png.Writer(width = cols, height = rows, greyscale=True, bitdepth=bitdepth)
         w.write(file, heightmap.tolist())
 
@@ -86,6 +82,9 @@ def run():
 
 
 if __name__ == "__main__":
+    if len(sys.argv) < 5:
+        print("Usage: python3 convert.py <side> <heightmap txt> <heightmap-output txt> <image>")
+        sys.exit(1)
     run()
 
 # -TRASH-------------------------------------------------------------------------------
