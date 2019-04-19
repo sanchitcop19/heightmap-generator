@@ -8,7 +8,9 @@ from bisect import bisect_left, bisect_right
 
 
 def run():
+
     class KeyList(object):
+        # Source: Don't remember, TODO
         # bisect doesn't accept a key function, so we build the key into our sequence.
         def __init__(self, l, key):
             self.l = l
@@ -21,23 +23,35 @@ def run():
             return self.key(self.l[index])
 
     def find_bounds(matrix):
+        """
+        Since white represents the highest point in the elevation matrix
+        and black represents the lowest, the minimum and maximum elevation
+        is needed to generate the relative coloring
+        """
         return np.amin(matrix), np.amax(matrix)
 
     def map_color(matrix):
+        """
+
+        """
         temp = np.zeros((len(matrix[0])), dtype=object)
         for idx, element in enumerate(matrix[0]):
             temp[idx] = (idx, element)
         return temp
 
-    def create_colors(matrix):
+    def create_elevation_vector(matrix):
+        """
+        Generates a vector of elevations from the lowest to the highest 
+        elevation by dividing the range into equal parts. The total possible
+        elevations that can be represented are 2**bitdepth
+        """
         start, stop = find_bounds(matrix)
-        #lowest elevation to highest, 655side colors
-        save = np.linspace(start, stop, 2 ** bitdepth, retstep=True)
-        print(save)
+        elevations = np.linspace(start, stop, 2 ** bitdepth, retstep=True)
 
-        return save
+        return elevations
 
     def find_le(a, x):
+        # Source: Python docs
         'Find rightmost value less than or equal to x'
         i = bisect_right(a, x)
         if i:
@@ -45,40 +59,47 @@ def run():
         raise ValueError
 
     def find_ge(a, x):
+        # Source: Python docs
         'Find leftmost item greater than or equal to x'
         i = bisect_left(a, x)
         if i != len(a):
             return a[i]
         raise ValueError
 
+    # Change this as you see fit, a bitdepth of 16 implies you can use 2**16
+    # or 65536 possible colors for the heightmap
     bitdepth = 16
 
+    # Load the matrix from the txt file saved using query.py
     matrix = np.loadtxt(sys.argv[2])
 
-    possible_colors = create_colors(matrix)
+    # See the function docstring
+    possible_colors = create_elevation_vector(matrix)
 
+    # See the function docstring
     assignment = map_color(possible_colors)
-    #iterate through each
-    # find closest mapping in possible_colors
-    # assign a new numpy array that coloring
+    
     rows = cols = int(sys.argv[1])
     heightmap = np.zeros((rows, cols), dtype=int)
+
     for row in range(0, rows):
         for col in range(0, cols):
+
+            # Arbitrary assignment of a specific elevation to the closest color we
+            # can represent using the elevation vector, found using binary search
             left = find_ge(possible_colors[0], matrix[row, col])
             right = find_le(possible_colors[0], matrix[row, col])
-            print("row, col: ", row, col)
+
             color = left if abs(left-matrix[row, col]) < abs(right-matrix[row, col]) else right
+
+            # Maps elevation to the appropriate color and assigns it to the heightmap matrix
             heightmap[row, col] = bisect_left(KeyList(assignment, key = lambda x : x[1]), color)
 
     np.savetxt(sys.argv[3], heightmap)
-    save = heightmap.tolist()
 
     with open(sys.argv[4], 'wb') as file:
         w = png.Writer(width = cols, height = rows, greyscale=True, bitdepth=bitdepth)
         w.write(file, heightmap.tolist())
-
-    # print(time()-start)
 
 
 if __name__ == "__main__":
@@ -86,15 +107,3 @@ if __name__ == "__main__":
         print("Usage: python3 convert.py <side> <heightmap txt> <heightmap-output txt> <image>")
         sys.exit(1)
     run()
-
-# -TRASH-------------------------------------------------------------------------------
-
-'''
-    start = time()
-    side = 2**bitdepth
-    #s = [[x for x in range(2**bitdepth)] for y in range(2**bitdepth)]
-    side_copy = 352
-    s = np.fromfunction(lambda x, y: y + 120*x, (side_copy, side_copy), dtype=int)
-    #s = np.random.randint(side, size = (side_copy,side_copy)).tolist()
-    #print(s)
-'''
